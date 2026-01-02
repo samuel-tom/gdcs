@@ -106,38 +106,7 @@ export default function TutorsPage() {
     },
   ]);
 
-  const [studentRequests, setStudentRequests] = useState<StudentRequest[]>([
-    {
-      id: '1',
-      name: 'Sneha Reddy',
-      email: 'sneha@sastra.ac.in',
-      subject: 'Operating Systems',
-      description: 'Need help with process scheduling and deadlock concepts',
-      year: 'Second Year',
-      department: 'CSE',
-      photoURL: 'https://i.pravatar.cc/150?img=45'
-    },
-    {
-      id: '2',
-      name: 'Rahul Krishnan',
-      email: 'rahul@sastra.ac.in',
-      subject: 'Data Structures',
-      description: 'Struggling with trees and graphs implementation',
-      year: 'Second Year',
-      department: 'IT',
-      photoURL: 'https://i.pravatar.cc/150?img=11'
-    },
-    {
-      id: '3',
-      name: 'Meera Nair',
-      email: 'meera@sastra.ac.in',
-      subject: 'Web Development',
-      description: 'Need guidance on React hooks and state management',
-      year: 'Third Year',
-      department: 'CSE',
-      photoURL: 'https://i.pravatar.cc/150?img=48'
-    },
-  ]);
+  const [studentRequests, setStudentRequests] = useState<StudentRequest[]>([]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -145,7 +114,7 @@ export default function TutorsPage() {
     }
   }, [user, loading, router]);
 
-  // Load from localStorage first (instant)
+  // Load from localStorage first (instant) - but Firestore will override
   useEffect(() => {
     const saved = localStorage.getItem('tutors');
     if (saved) {
@@ -156,14 +125,8 @@ export default function TutorsPage() {
       }
     }
     
-    const savedRequests = localStorage.getItem('studentRequests');
-    if (savedRequests) {
-      try {
-        setStudentRequests(JSON.parse(savedRequests));
-      } catch (e) {
-        console.error('Failed to load student requests');
-      }
-    }
+    // Don't load mock data from localStorage for student requests
+    // Let Firestore be the source of truth
   }, []);
 
   // Try to sync with Firestore (if enabled)
@@ -196,10 +159,9 @@ export default function TutorsPage() {
         snapshot.forEach((doc) => {
           requestsList.push({ id: doc.id, ...doc.data() } as StudentRequest);
         });
-        if (requestsList.length > 0) {
-          setStudentRequests(requestsList);
-          localStorage.setItem('studentRequests', JSON.stringify(requestsList));
-        }
+        console.log('Loaded student requests from Firestore:', requestsList.length);
+        setStudentRequests(requestsList);
+        localStorage.setItem('studentRequests', JSON.stringify(requestsList));
       }, (error) => {
         console.log('Firestore student requests error:', error);
       });
