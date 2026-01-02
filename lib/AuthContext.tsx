@@ -30,13 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      // Verify it's a SASTRA email
-      if (!result.user.email?.endsWith('@sastra.ac.in')) {
-        await signOut(auth);
-        alert('Please use your SASTRA college email (@sastra.ac.in)');
-        return;
-      }
+      await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
       console.error('Error signing in:', error);
       alert('Error signing in: ' + error.message);
