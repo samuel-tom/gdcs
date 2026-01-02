@@ -116,7 +116,8 @@ export default function ChatBot({ onSearch, type, resultCount = 0 }: ChatBotProp
     
     if (foundPattern) {
       filters.subject = foundPattern.canonical;
-      filters.query = foundPattern.canonical;
+      // Use the original input for search so it matches both abbreviations and full names
+      filters.query = msg;
     } else if (lower.length > 3) {
       filters.query = msg;
     }
