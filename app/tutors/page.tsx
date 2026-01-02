@@ -187,6 +187,27 @@ export default function TutorsPage() {
     }
   }, []);
 
+  // Sync student requests with Firestore
+  useEffect(() => {
+    try {
+      const q = query(collection(db, 'studentRequests'), orderBy('createdAt', 'desc'));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const requestsList: StudentRequest[] = [];
+        snapshot.forEach((doc) => {
+          requestsList.push({ id: doc.id, ...doc.data() } as StudentRequest);
+        });
+        setStudentRequests(requestsList);
+        localStorage.setItem('studentRequests', JSON.stringify(requestsList));
+      }, (error) => {
+        console.log('Firestore student requests not enabled, using localStorage only');
+      });
+
+      return () => unsubscribe();
+    } catch (error) {
+      console.log('Using localStorage mode for student requests');
+    }
+  }, []);
+
   const handleTutorSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !tutorForm.subjects || !tutorForm.availability) {
