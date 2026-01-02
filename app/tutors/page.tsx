@@ -32,7 +32,8 @@ export default function TutorsPage() {
     subject: '',
     description: '',
     year: 'Second Year',
-    department: 'CSE'
+    department: 'CSE',
+    phone: ''
   });
   
   const [showStudentForm, setShowStudentForm] = useState(false);
@@ -239,6 +240,7 @@ export default function TutorsPage() {
       id: Date.now().toString(),
       name: user.displayName || 'Anonymous',
       email: user.email || '',
+      phone: studentForm.phone || undefined,
       subject: studentForm.subject,
       description: studentForm.description,
       year: studentForm.year,
@@ -250,7 +252,7 @@ export default function TutorsPage() {
     setStudentRequests(updatedRequests);
     localStorage.setItem('studentRequests', JSON.stringify(updatedRequests));
     
-    setStudentForm({ subject: '', description: '', year: 'Second Year', department: 'CSE' });
+    setStudentForm({ subject: '', description: '', year: 'Second Year', department: 'CSE', phone: '' });
     setShowStudentForm(false);
     setIsSubmitting(false);
     
@@ -626,6 +628,18 @@ export default function TutorsPage() {
                       className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none text-gray-800 resize-none"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Phone Number <span className="text-gray-400 text-xs">(Optional)</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={studentForm.phone}
+                      onChange={(e) => setStudentForm({...studentForm, phone: e.target.value})}
+                      placeholder="+91 98765 43210"
+                      className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none text-gray-800"
+                    />
+                  </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -737,7 +751,8 @@ export default function TutorsPage() {
                       <p className="text-gray-700 mb-4">{request.description}</p>
                       <button 
                         onClick={() => {
-                          alert(`📧 Contact ${request.name}:\n\nEmail: ${request.email}\n\nYou can reach out to help them with ${request.subject}!`);
+                          const contactInfo = `📧 Contact ${request.name}:\n\nEmail: ${request.email}${request.phone ? '\nPhone: ' + request.phone : ''}\n\nYou can reach out to help them with ${request.subject}!`;
+                          alert(contactInfo);
                         }}
                         className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
                       >

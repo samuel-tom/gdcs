@@ -15,6 +15,7 @@ export interface StudentRequest {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   subject: string;
   description: string;
   year: string;
