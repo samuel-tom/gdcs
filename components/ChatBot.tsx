@@ -168,8 +168,9 @@ export default function ChatBot({ onSearch, type, resultCount = 0 }: ChatBotProp
       const response = getLoadingResponse(filters);
       setMessages(prev => [...prev, { text: response, isBot: true }]);
       
-      // Apply filters if they were found
-      if (filters.query || filters.department || filters.subject) {
+      // Only trigger search if we found a valid subject or department
+      // Don't search for generic queries to avoid false "no results" messages
+      if (filters.subject || filters.department) {
         setWaitingForResults(true);
         onSearch(filters);
       }
