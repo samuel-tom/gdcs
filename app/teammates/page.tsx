@@ -491,6 +491,7 @@ export default function TeammatesPage() {
       {/* AI Chatbot Assistant */}
       <ChatBot
         type="teammate"
+        resultCount={filteredTeammates.length}
         onSearch={(filters) => {
           if (filters.query) setSearchQuery(filters.query);
         }}

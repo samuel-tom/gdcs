@@ -778,6 +778,7 @@ export default function TutorsPage() {
       {mode === 'student' && (
         <ChatBot
           type="tutor"
+          resultCount={filteredTutors.length}
           onSearch={(filters) => {
             if (filters.query) setSearchQuery(filters.query);
             if (filters.department) setFilterDepartment(filters.department);
