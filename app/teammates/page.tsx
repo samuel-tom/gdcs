@@ -7,6 +7,7 @@ import { ArrowLeft, Users, Search, Plus, X, Code, Lightbulb, Trophy } from 'luci
 import type { TeammateProfile } from '@/types';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import ChatBot from '@/components/ChatBot';
 
 export default function TeammatesPage() {
   const { user, loading } = useAuth();
@@ -486,6 +487,14 @@ export default function TeammatesPage() {
           )}
         </div>
       </div>
+
+      {/* AI Chatbot Assistant */}
+      <ChatBot
+        type="teammate"
+        onSearch={(filters) => {
+          if (filters.query) setSearchQuery(filters.query);
+        }}
+      />
     </div>
   );
 }
