@@ -190,16 +190,18 @@ export default function TutorsPage() {
   // Sync student requests with Firestore
   useEffect(() => {
     try {
-      const q = query(collection(db, 'studentRequests'), orderBy('createdAt', 'desc'));
-      const unsubscribe = onSnapshot(q, (snapshot) => {
+      // Try without ordering first to avoid index issues
+      const unsubscribe = onSnapshot(collection(db, 'studentRequests'), (snapshot) => {
         const requestsList: StudentRequest[] = [];
         snapshot.forEach((doc) => {
           requestsList.push({ id: doc.id, ...doc.data() } as StudentRequest);
         });
-        setStudentRequests(requestsList);
-        localStorage.setItem('studentRequests', JSON.stringify(requestsList));
+        if (requestsList.length > 0) {
+          setStudentRequests(requestsList);
+          localStorage.setItem('studentRequests', JSON.stringify(requestsList));
+        }
       }, (error) => {
-        console.log('Firestore student requests not enabled, using localStorage only');
+        console.log('Firestore student requests error:', error);
       });
 
       return () => unsubscribe();
