@@ -735,7 +735,12 @@ export default function TutorsPage() {
                         </span>
                       </div>
                       <p className="text-gray-700 mb-4">{request.description}</p>
-                      <button className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">
+                      <button 
+                        onClick={() => {
+                          alert(`📧 Contact ${request.name}:\n\nEmail: ${request.email}\n\nYou can reach out to help them with ${request.subject}!`);
+                        }}
+                        className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
+                      >
                         Offer Help
                       </button>
                     </div>
