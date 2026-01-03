@@ -116,7 +116,7 @@ export default function UniversalChatBot() {
     return { intent: 'unknown', data: {} };
   };
 
-  const handleIntent = (intent: string, data: any): string => {
+  const handleIntent = (intent: string, data: any) => {
     switch (intent) {
       case 'find_tutor':
         setTimeout(() => {
@@ -125,9 +125,7 @@ export default function UniversalChatBot() {
           if (data.department) params.append('department', data.department);
           router.push(`/tutors?mode=find&${params.toString()}`);
         }, 1500);
-        return data.subject 
-          ? `Perfect! Let me find tutors who can help with ${data.subject}... 🔍\n\nTaking you to the tutor matching page!`
-          : "Taking you to browse all available tutors! 📚";
+        break;
 
       case 'student_request':
         setTimeout(() => {
@@ -136,15 +134,13 @@ export default function UniversalChatBot() {
           if (data.department) params.append('department', data.department);
           router.push(`/tutors?mode=student&${params.toString()}`);
         }, 1500);
-        return data.subject
-          ? `Got it! I'll help you post a request for ${data.subject} help. 📝\n\nRedirecting you to the student request form!`
-          : "Taking you to post your help request! 📝";
+        break;
 
       case 'become_tutor':
         setTimeout(() => {
           router.push('/tutors?mode=tutor');
         }, 1500);
-        return "Awesome! Let's get you registered as a tutor! 🎓\n\nYou'll be helping students in no time!";
+        break;
 
       case 'find_teammate':
         setTimeout(() => {
@@ -153,51 +149,59 @@ export default function UniversalChatBot() {
           if (data.department) params.append('department', data.department);
           router.push(`/teammates?${params.toString()}`);
         }, 1500);
-        return data.skill
-          ? `Great! Searching for teammates with ${data.skill} skills... 🚀\n\nRedirecting you now!`
-          : "Taking you to the teammate finder! 🤝";
-
-      default:
-        return "I'm not quite sure what you're looking for. 🤔\n\nTry asking me to:\n• 'Find a Python tutor'\n• 'I need help with Data Structures'\n• 'Find teammates for a hackathon'\n• 'I want to become a tutor'";
+        break;
     }
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
 
     const userMessage = input.trim();
     setMessages(prev => [...prev, { text: userMessage, isBot: false }]);
     setInput('');
 
-    // Greetings
-    if (/^(hi|hello|hey|hola|yo|sup)\b/i.test(userMessage.trim())) {
-      setTimeout(() => {
-        setMessages(prev => [...prev, { 
-          text: "Hey there! 😊 What can I help you with today?", 
-          isBot: true 
-        }]);
-      }, 400);
-      return;
-    }
+    // Show typing indicator
+    setMessages(prev => [...prev, { text: '...', isBot: true }]);
 
-    // Thanks
-    if (/^(thanks|thank you|thx|ty|thank)\b/i.test(userMessage.trim())) {
-      setTimeout(() => {
-        setMessages(prev => [...prev, { 
-          text: "You're very welcome! Happy to help anytime! 💙", 
-          isBot: true 
-        }]);
-      }, 400);
-      return;
-    }
+    try {
+      // Call AI API for intelligent response
+      const aiResponse = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage })
+      });
 
-    // Analyze intent and respond
-    const { intent, data } = analyzeIntent(userMessage);
-    const response = handleIntent(intent, data);
+      const data = await aiResponse.json();
+      
+      // Remove typing indicator
+      setMessages(prev => prev.slice(0, -1));
 
-    setTimeout(() => {
+      if (data.error) {
+        // Fallback to pattern-based response
+        const { intent, data: intentData } = analyzeIntent(userMessage);
+        const response = handleIntent(intent, intentData);
+        setMessages(prev => [...prev, { text: response, isBot: true }]);
+      } else {
+        // Use AI response
+        setMessages(prev => [...prev, { text: data.response, isBot: true }]);
+        
+        // Still analyze intent for routing
+        const { intent, data: intentData } = analyzeIntent(userMessage);
+        if (intent !== 'unknown') {
+          handleIntent(intent, intentData);
+        }
+      }
+    } catch (error) {
+      console.error('AI request failed:', error);
+      
+      // Remove typing indicator
+      setMessages(prev => prev.slice(0, -1));
+      
+      // Fallback to pattern-based response
+      const { intent, data: intentData } = analyzeIntent(userMessage);
+      const response = handleIntent(intent, intentData);
       setMessages(prev => [...prev, { text: response, isBot: true }]);
-    }, 400);
+    }
   };
 
   const handleQuickAction = (action: string) => {
