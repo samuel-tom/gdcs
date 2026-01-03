@@ -244,32 +244,9 @@ function TutorsContent() {
     }, 100);
   };
 
-  const handleContactTutor = async (tutor: TutorProfile) => {
-    if (!user) return;
-    
-    // Use uid or userId (for backward compatibility)
-    const tutorUid = tutor.uid || tutor.userId;
-    
-    if (!tutorUid) {
-      // Fallback for mock data without any UID info
-      const contactInfo = `Contact ${tutor.name}:\n\nEmail: ${tutor.email}${tutor.phone ? '\nPhone: ' + tutor.phone : ''}${tutor.location ? '\nLocation: ' + tutor.location : ''}\n\nSubjects: ${tutor.subjects.join(', ')}\nAvailability: ${tutor.availability}`;
-      alert(contactInfo);
-      return;
-    }
-    
-    try {
-      const { getOrCreateDmRoom } = await import('@/lib/chat');
-      const roomId = await getOrCreateDmRoom(
-        user.uid,
-        tutorUid,
-        user.displayName || 'Anonymous',
-        tutor.name
-      );
-      router.push(`/chats/${roomId}`);
-    } catch (error) {
-      console.error('Failed to create chat:', error);
-      alert('Failed to open chat. Please try again.');
-    }
+  const handleContactTutor = (tutor: TutorProfile) => {
+    const contactInfo = `Contact ${tutor.name}:\n\nEmail: ${tutor.email}${tutor.phone ? '\nPhone: ' + tutor.phone : ''}${tutor.location ? '\nLocation: ' + tutor.location : ''}\n\nSubjects: ${tutor.subjects.join(', ')}\nAvailability: ${tutor.availability}`;
+    alert(contactInfo);
   };
   
   const handleStudentSubmit = async (e: React.FormEvent) => {

@@ -138,10 +138,10 @@ export default function Dashboard() {
                 <MessageCircle className="w-10 h-10 text-green-600" />
               </div>
               <h3 className="text-2xl font-bold text-gray-800 mb-3 group-hover:text-green-600 transition-colors">
-                Messages
+                Community Chat
               </h3>
               <p className="text-gray-600 mb-4">
-                Chat with tutors, teammates, and peers in direct messages or public rooms
+                Join public discussion rooms to chat with students about hackathons, academics, and more
               </p>
               <div className="flex items-center text-green-600 font-semibold group-hover:gap-3 gap-2 transition-all">
                 Get Started

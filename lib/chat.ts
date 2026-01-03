@@ -169,18 +169,18 @@ export async function seedPublicRooms() {
     { title: 'Off-topic', description: 'Random fun conversations' }
   ];
 
-  for (const room of publicRooms) {
-    // Check if room already exists
-    const q = query(
-      roomsRef,
-      where('type', '==', 'public'),
-      where('title', '==', room.title),
-      limit(1)
-    );
-    
-    const snapshot = await getDocs(q);
-    
-    if (snapshot.empty) {
+  // Check if ANY public rooms exist
+  const existingRoomsQuery = query(
+    roomsRef,
+    where('type', '==', 'public'),
+    limit(1)
+  );
+  
+  const existingSnapshot = await getDocs(existingRoomsQuery);
+  
+  // Only seed if no public rooms exist at all
+  if (existingSnapshot.empty) {
+    for (const room of publicRooms) {
       await addDoc(roomsRef, {
         type: 'public',
         title: room.title,
@@ -188,6 +188,50 @@ export async function seedPublicRooms() {
         members: [],
         createdAt: serverTimestamp()
       });
+    }
+  }
+}
+
+/**
+ * Clean up duplicate public rooms (keep only the oldest of each title)
+ */
+export async function cleanupDuplicateRooms() {
+  const roomsRef = collection(db, 'chat_rooms');
+  const q = query(roomsRef, where('type', '==', 'public'));
+  const snapshot = await getDocs(q);
+  
+  const roomsByTitle: { [key: string]: any[] } = {};
+  
+  // Group rooms by title
+  snapshot.docs.forEach(doc => {
+    const data = doc.data();
+    const title = data.title || 'Unknown';
+    
+    if (!roomsByTitle[title]) {
+      roomsByTitle[title] = [];
+    }
+    
+    roomsByTitle[title].push({ id: doc.id, ...data, docRef: doc.ref });
+  });
+  
+  // For each title with duplicates, keep the oldest and delete the rest
+  for (const title in roomsByTitle) {
+    const rooms = roomsByTitle[title];
+    
+    if (rooms.length > 1) {
+      // Sort by createdAt (oldest first)
+      rooms.sort((a, b) => {
+        const aTime = a.createdAt?.toMillis?.() || 0;
+        const bTime = b.createdAt?.toMillis?.() || 0;
+        return aTime - bTime;
+      });
+      
+      // Delete all except the first (oldest) one
+      for (let i = 1; i < rooms.length; i++) {
+        const { deleteDoc } = await import('firebase/firestore');
+        await deleteDoc(rooms[i].docRef);
+        console.log(`Deleted duplicate room: ${title}`);
+      }
     }
   }
 }

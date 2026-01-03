@@ -199,32 +199,9 @@ function TeammatesContent() {
     }, 100);
   };
 
-  const handleConnect = async (teammate: TeammateProfile) => {
-    if (!user) return;
-    
-    // Use uid or userId (for backward compatibility)
-    const teammateUid = teammate.uid || teammate.userId;
-    
-    if (!teammateUid) {
-      // Fallback for mock data without any UID info
-      const contactInfo = `Connect with ${teammate.name}:\n\nEmail: ${teammate.email}${teammate.phone ? '\nPhone: ' + teammate.phone : ''}\n\nSkills: ${teammate.skills.join(', ')}\nInterests: ${teammate.interests.join(', ')}\n\nLooking for: ${teammate.lookingFor}`;
-      alert(contactInfo);
-      return;
-    }
-    
-    try {
-      const { getOrCreateDmRoom } = await import('@/lib/chat');
-      const roomId = await getOrCreateDmRoom(
-        user.uid,
-        teammateUid,
-        user.displayName || 'Anonymous',
-        teammate.name
-      );
-      router.push(`/chats/${roomId}`);
-    } catch (error) {
-      console.error('Failed to create chat:', error);
-      alert('Failed to open chat. Please try again.');
-    }
+  const handleConnect = (teammate: TeammateProfile) => {
+    const contactInfo = `Connect with ${teammate.name}:\n\nEmail: ${teammate.email}${teammate.phone ? '\nPhone: ' + teammate.phone : ''}\n\nSkills: ${teammate.skills.join(', ')}\nInterests: ${teammate.interests.join(', ')}\n\nLooking for: ${teammate.lookingFor}`;
+    alert(contactInfo);
   };
 
   if (loading || !user) {

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cleanup Duplicate Rooms</title>
+</head>
+<body>
+  <h1>Cleanup Duplicate Chat Rooms</h1>
+  <button id="cleanup" style="padding: 20px; font-size: 18px; cursor: pointer;">
+    Click to Remove Duplicates
+  </button>
+  <div id="status" style="margin-top: 20px; font-family: monospace;"></div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, query, where, getDocs, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    // Your Firebase config (from .env.local)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCXOwIe1wuWdkOwsQKyc6NNl3P7y3cFgMo",
+      authDomain: "sastra-tutor-connect.firebaseapp.com",
+      projectId: "sastra-tutor-connect",
+      storageBucket: "sastra-tutor-connect.firebasestorage.app",
+      messagingSenderId: "1047663766373",
+      appId: "1:1047663766373:web:cbed89734a76de86ae7544"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    document.getElementById('cleanup').addEventListener('click', async () => {
+      const statusDiv = document.getElementById('status');
+      statusDiv.innerHTML = 'Starting cleanup...<br>';
+
+      try {
+        const roomsRef = collection(db, 'chat_rooms');
+        const q = query(roomsRef, where('type', '==', 'public'));
+        const snapshot = await getDocs(q);
+        
+        statusDiv.innerHTML += `Found ${snapshot.docs.length} total rooms<br>`;
+        
+        const roomsByTitle = {};
+        
+        // Group rooms by title
+        snapshot.docs.forEach(doc => {
+          const data = doc.data();
+          const title = data.title || 'Unknown';
+          
+          if (!roomsByTitle[title]) {
+            roomsByTitle[title] = [];
+          }
+          
+          roomsByTitle[title].push({ id: doc.id, data, ref: doc.ref });
+        });
+        
+        let deletedCount = 0;
+        
+        // For each title with duplicates, keep the first and delete the rest
+        for (const title in roomsByTitle) {
+          const rooms = roomsByTitle[title];
+          
+          statusDiv.innerHTML += `<br>${title}: ${rooms.length} room(s)<br>`;
+          
+          if (rooms.length > 1) {
+            // Keep the first one, delete the rest
+            for (let i = 1; i < rooms.length; i++) {
+              await deleteDoc(rooms[i].ref);
+              statusDiv.innerHTML += `  ✓ Deleted duplicate ${title} (${rooms[i].id})<br>`;
+              deletedCount++;
+            }
+          } else {
+            statusDiv.innerHTML += `  ✓ No duplicates<br>`;
+          }
+        }
+        
+        statusDiv.innerHTML += `<br><strong style="color: green;">✅ Cleanup complete! Deleted ${deletedCount} duplicate rooms.</strong>`;
+      } catch (error) {
+        statusDiv.innerHTML += `<br><strong style="color: red;">❌ Error: ${error.message}</strong>`;
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>
