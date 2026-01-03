@@ -3,10 +3,12 @@
 import { useAuth } from '@/lib/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
-import { ArrowLeft, BookOpen, Search, Plus, X } from 'lucide-react';
+import { ArrowLeft, BookOpen, Search, Plus, X, Star, User } from 'lucide-react';
 import type { TutorProfile, StudentRequest } from '@/types';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { getTutors, UserProfile } from '@/lib/profile';
+import Link from 'next/link';
 
 function TutorsContent() {
   const { user, loading } = useAuth();
@@ -40,75 +42,23 @@ function TutorsContent() {
   const [showStudentForm, setShowStudentForm] = useState(false);
   const [filterRequestDepartment, setFilterRequestDepartment] = useState('all');
 
-  // Mock data - will be replaced by Firestore data when available
-  const [tutors, setTutors] = useState<TutorProfile[]>([
-    {
-      id: '1',
-      name: 'Rajesh Kumar',
-      email: 'rajesh@sastra.ac.in',
-      phone: '+91 98765 43210',
-      subjects: ['Data Structures', 'Algorithms', 'C++'],
-      year: 'Final Year',
-      department: 'CSE',
-      availability: 'Weekday evenings',
-      photoURL: 'https://i.pravatar.cc/150?img=12'
-    },
-    {
-      id: '2',
-      name: 'Priya Sharma',
-      email: 'priya@sastra.ac.in',
-      phone: '+91 98234 56789',
-      subjects: ['Machine Learning', 'Python', 'Statistics'],
-      year: 'Third Year',
-      department: 'CSE',
-      availability: 'Weekends',
-      photoURL: 'https://i.pravatar.cc/150?img=47'
-    },
-    {
-      id: '3',
-      name: 'Arun Prakash',
-      email: 'arun@sastra.ac.in',
-      subjects: ['Database Management', 'SQL', 'Java'],
-      year: 'Final Year',
-      department: 'IT',
-      availability: 'Flexible',
-      photoURL: 'https://i.pravatar.cc/150?img=33'
-    },
-    {
-      id: '4',
-      name: 'Divya Ramesh',
-      email: 'divya@sastra.ac.in',
-      phone: '+91 99876 54321',
-      subjects: ['Web Development', 'React', 'JavaScript'],
-      year: 'Final Year',
-      department: 'CSE',
-      availability: 'Afternoons',
-      photoURL: 'https://i.pravatar.cc/150?img=45'
-    },
-    {
-      id: '5',
-      name: 'Karthik Subramanian',
-      email: 'karthik@sastra.ac.in',
-      subjects: ['Operating Systems', 'Computer Networks'],
-      year: 'Third Year',
-      department: 'IT',
-      availability: 'Mornings',
-      photoURL: 'https://i.pravatar.cc/150?img=14'
-    },
-    {
-      id: '6',
-      name: 'Anjali Iyer',
-      email: 'anjali@sastra.ac.in',
-      phone: '+91 97654 32109',
-      subjects: ['Digital Electronics', 'Embedded Systems'],
-      year: 'Final Year',
-      department: 'ECE',
-      availability: 'Weekends',
-      photoURL: 'https://i.pravatar.cc/150?img=49'
-    },
-  ]);
-
+  // Firestore tutors
+  const [tutors, setTutors] = useState<UserProfile[]>([]);
   const [studentRequests, setStudentRequests] = useState<StudentRequest[]>([]);
+
+  // Load tutors from Firestore
+  useEffect(() => {
+    loadTutors();
+  }, []);
+
+  const loadTutors = async () => {
+    try {
+      const tutorProfiles = await getTutors();
+      setTutors(tutorProfiles);
+    } catch (error) {
+      console.error('Error loading tutors:', error);
+    }
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -136,41 +86,6 @@ function TutorsContent() {
     }
   }, [searchParams]);
 
-  // Load from localStorage first (instant) - but Firestore will override
-  useEffect(() => {
-    const saved = localStorage.getItem('tutors');
-    if (saved) {
-      try {
-        setTutors(JSON.parse(saved));
-      } catch (e) {
-        console.error('Failed to load from localStorage');
-      }
-    }
-    
-    // Don't load mock data from localStorage for student requests
-    // Let Firestore be the source of truth
-  }, []);
-
-  // Try to sync with Firestore (if enabled)
-  useEffect(() => {
-    try {
-      const unsubscribe = onSnapshot(collection(db, 'tutors'), (snapshot) => {
-        const tutorsList: TutorProfile[] = [];
-        snapshot.forEach((doc) => {
-          tutorsList.push({ id: doc.id, ...doc.data() } as TutorProfile);
-        });
-        setTutors(tutorsList);
-        localStorage.setItem('tutors', JSON.stringify(tutorsList));
-      }, (error) => {
-        console.log('Firestore not enabled, using localStorage only');
-      });
-
-      return () => unsubscribe();
-    } catch (error) {
-      console.log('Using localStorage mode');
-    }
-  }, []);
-
   // Sync student requests with Firestore
   useEffect(() => {
     try {
@@ -195,57 +110,13 @@ function TutorsContent() {
 
   const handleTutorSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !tutorForm.subjects || !tutorForm.availability) {
-      alert('⚠️ Please fill in all required fields (subjects and availability)');
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
-    const newTutor: TutorProfile = {
-      id: Date.now().toString(),
-      uid: user.uid,
-      name: user.displayName || 'Anonymous',
-      email: user.email || '',
-      phone: tutorForm.phone || undefined,
-      subjects: tutorForm.subjects.split(',').map(s => s.trim()),
-      year: tutorForm.year,
-      department: tutorForm.department,
-      availability: tutorForm.availability,
-      location: tutorForm.location || undefined,
-      photoURL: user.photoURL || undefined
-    };
-    
-    // Add to local state and localStorage immediately
-    const updatedTutors = [newTutor, ...tutors];
-    setTutors(updatedTutors);
-    localStorage.setItem('tutors', JSON.stringify(updatedTutors));
-    
-    // Reset form and close it immediately
-    setTutorForm({ subjects: '', year: 'Second Year', department: 'CSE', availability: '', phone: '', location: '' });
-    setShowForm(false);
-    setIsSubmitting(false);
-    
-    // Try to save to Firestore in background (don't await)
-    addDoc(collection(db, 'tutors'), {
-      ...newTutor,
-      createdAt: new Date().toISOString(),
-      userId: user.uid
-    }).then(() => {
-      console.log('Synced to cloud');
-    }).catch((error) => {
-      console.log('Cloud sync disabled, data saved locally');
-    });
-    
-    // Show success after a brief delay to ensure form closes
-    setTimeout(() => {
-      alert('✅ SUCCESS!\n\nYour tutor profile has been created!\n\nSwitch to "Find a Tutor" mode to see your profile.');
-    }, 100);
+    // Redirect to profile page to set up complete tutor profile
+    router.push('/profile');
   };
 
-  const handleContactTutor = (tutor: TutorProfile) => {
-    const contactInfo = `Contact ${tutor.name}:\n\nEmail: ${tutor.email}${tutor.phone ? '\nPhone: ' + tutor.phone : ''}${tutor.location ? '\nLocation: ' + tutor.location : ''}\n\nSubjects: ${tutor.subjects.join(', ')}\nAvailability: ${tutor.availability}`;
-    alert(contactInfo);
+  const handleContactTutor = (tutor: UserProfile) => {
+    // Navigate to tutor's profile page
+    router.push(`/u/${tutor.uid}`);
   };
   
   const handleStudentSubmit = async (e: React.FormEvent) => {
@@ -303,9 +174,9 @@ function TutorsContent() {
 
   const filteredTutors = tutors.filter(tutor => {
     const matchesSearch = 
-      tutor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tutor.subjects.some(s => s.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      tutor.department.toLowerCase().includes(searchQuery.toLowerCase());
+      tutor.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tutor.tutorSubjects.some(s => s.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (tutor.department && tutor.department.toLowerCase().includes(searchQuery.toLowerCase()));
     
     const matchesDepartment = filterDepartment === 'all' || tutor.department === filterDepartment;
     
@@ -433,25 +304,48 @@ function TutorsContent() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredTutors.map((tutor) => (
                 <div
-                  key={tutor.id}
+                  key={tutor.uid}
                   className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow"
                 >
-                  <div className="flex items-start gap-4 mb-4">
-                    <img
-                      src={tutor.photoURL}
-                      alt={tutor.name}
-                      className="w-16 h-16 rounded-full border-2 border-blue-500"
-                    />
-                    <div className="flex-1">
-                      <h3 className="font-bold text-gray-800 text-lg">{tutor.name}</h3>
-                      <p className="text-sm text-gray-500">{tutor.year} • {tutor.department}</p>
+                  <Link href={`/u/${tutor.uid}`} className="block">
+                    <div className="flex items-start gap-4 mb-4 cursor-pointer hover:opacity-80 transition-opacity">
+                      {tutor.photoURL ? (
+                        <img
+                          src={tutor.photoURL}
+                          alt={tutor.displayName}
+                          className="w-16 h-16 rounded-full border-2 border-blue-500 object-cover"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-full border-2 border-blue-500 bg-gray-200 flex items-center justify-center">
+                          <User className="w-8 h-8 text-gray-400" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <h3 className="font-bold text-gray-800 text-lg hover:text-blue-600 transition-colors">
+                          {tutor.displayName}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          {tutor.year} • {tutor.department}
+                        </p>
+                        {tutor.tutorStats && tutor.tutorStats.ratingCount > 0 && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                            <span className="text-sm font-semibold">
+                              {tutor.tutorStats.ratingAvg.toFixed(1)}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              ({tutor.tutorStats.ratingCount})
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                   
                   <div className="mb-4">
                     <p className="text-sm font-semibold text-gray-700 mb-2">Subjects:</p>
                     <div className="flex flex-wrap gap-2">
-                      {tutor.subjects.map((subject, idx) => (
+                      {tutor.tutorSubjects.map((subject, idx) => (
                         <span
                           key={idx}
                           className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium"
@@ -462,24 +356,24 @@ function TutorsContent() {
                     </div>
                   </div>
 
-                  <p className="text-sm text-gray-600 mb-2">
-                    <span className="font-semibold">Available:</span> {tutor.availability}
-                  </p>
-                  
-                  {tutor.location && (
-                    <p className="text-sm text-gray-600 mb-4">
-                      <span className="font-semibold">Location:</span> {tutor.location}
+                  {tutor.tutorAvailabilityText && (
+                    <p className="text-sm text-gray-600 mb-2">
+                      <span className="font-semibold">Available:</span> {tutor.tutorAvailabilityText}
                     </p>
                   )}
                   
-                  {!tutor.location && <div className="mb-4"></div>}
+                  {tutor.tutorPricingText && (
+                    <p className="text-sm text-gray-600 mb-4">
+                      <span className="font-semibold">Pricing:</span> {tutor.tutorPricingText}
+                    </p>
+                  )}
 
-                  <button 
-                    onClick={() => handleContactTutor(tutor)}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                  <Link
+                    href={`/u/${tutor.uid}`}
+                    className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-center"
                   >
-                    Contact Tutor
-                  </button>
+                    View Profile
+                  </Link>
                 </div>
               ))}
             </div>

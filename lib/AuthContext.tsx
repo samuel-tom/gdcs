@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
+import { ensureUserProfile } from '@/lib/profile';
 
 interface AuthContextType {
   user: User | null;
@@ -20,8 +21,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
+      
+      // Ensure profile exists when user logs in
+      if (user) {
+        try {
+          await ensureUserProfile(user);
+        } catch (error) {
+          console.error('Error ensuring user profile:', error);
+        }
+      }
+      
       setLoading(false);
     });
 

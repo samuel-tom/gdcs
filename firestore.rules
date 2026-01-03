@@ -7,9 +7,55 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    // Helper function to check if user is a member of the room
-    function isMember(roomData) {
-      return isSignedIn() && request.auth.uid in roomData.members;
+    // Helper function to check if user owns the document
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    // Profiles collection
+    match /profiles/{profileId} {
+      // Anyone authenticated can read profiles
+      allow read: if isSignedIn();
+      
+      // Only the profile owner can create/update their own profile
+      allow create: if isSignedIn() && request.auth.uid == profileId;
+      
+      // Allow updates if:
+      // 1. User is the owner (for profile edits), OR
+      // 2. Only tutorStats fields are being updated (for rating aggregation)
+      allow update: if isSignedIn() && (
+        // Owner can update everything
+        (isOwner(profileId) && 
+          request.resource.data.uid == profileId &&
+          request.resource.data.email is string &&
+          request.resource.data.displayName is string) ||
+        // Anyone can update tutorStats (used by rating system)
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['tutorStats', 'updatedAt']))
+      );
+      
+      // Only owner can delete
+      allow delete: if isOwner(profileId);
+      
+      // Ratings subcollection
+      match /ratings/{reviewerUid} {
+        // Anyone authenticated can read ratings
+        allow read: if isSignedIn();
+        
+        // Users can only create/update their own rating
+        // Cannot rate themselves
+        allow create, update: if isSignedIn() && 
+          request.auth.uid == reviewerUid &&
+          request.auth.uid != profileId &&
+          request.resource.data.reviewerUid == reviewerUid &&
+          request.resource.data.rating is int &&
+          request.resource.data.rating >= 1 &&
+          request.resource.data.rating <= 5 &&
+          request.resource.data.comment is string &&
+          request.resource.data.comment.size() <= 500;
+        
+        // No deletion allowed
+        allow delete: if false;
+      }
     }
     
     // Chat rooms
@@ -24,17 +70,17 @@ service cloud.firestore {
       }
     }
     
-    // Existing collections (tutors, teammates, etc.) - keep existing rules
+    // Existing collections
     match /tutors/{document=**} {
-      allow read, write: if true; // Test mode
+      allow read, write: if isSignedIn();
     }
     
     match /teammates/{document=**} {
-      allow read, write: if true; // Test mode
+      allow read, write: if isSignedIn();
     }
     
     match /studentRequests/{document=**} {
-      allow read, write: if true; // Test mode
+      allow read, write: if isSignedIn();
     }
   }
 }
