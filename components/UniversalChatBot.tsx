@@ -177,10 +177,11 @@ export default function UniversalChatBot() {
       setMessages(prev => prev.slice(0, -1));
 
       if (data.error) {
-        // Fallback to pattern-based response
-        const { intent, data: intentData } = analyzeIntent(userMessage);
-        const response = handleIntent(intent, intentData);
-        setMessages(prev => [...prev, { text: response, isBot: true }]);
+        // Fallback to simple response
+        setMessages(prev => [...prev, { 
+          text: "I'm having trouble connecting to my AI brain right now. 🤔 Can you try rephrasing your question?", 
+          isBot: true 
+        }]);
       } else {
         // Use AI response
         setMessages(prev => [...prev, { text: data.response, isBot: true }]);
@@ -197,10 +198,11 @@ export default function UniversalChatBot() {
       // Remove typing indicator
       setMessages(prev => prev.slice(0, -1));
       
-      // Fallback to pattern-based response
-      const { intent, data: intentData } = analyzeIntent(userMessage);
-      const response = handleIntent(intent, intentData);
-      setMessages(prev => [...prev, { text: response, isBot: true }]);
+      // Fallback response
+      setMessages(prev => [...prev, { 
+        text: "Oops! Something went wrong. 😅 Try asking me to find tutors, post a help request, or find teammates!", 
+        isBot: true 
+      }]);
     }
   };
 
