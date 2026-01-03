@@ -14,33 +14,13 @@ service cloud.firestore {
     
     // Chat rooms
     match /chat_rooms/{roomId} {
-      // Allow read for public rooms only
-      allow read: if isSignedIn() && resource.data.type == 'public';
-      
-      // Allow create for public rooms (for seeding)
-      allow create: if isSignedIn() && 
-        request.resource.data.type == 'public';
-      
-      // Allow delete for cleanup of duplicates
-      allow delete: if isSignedIn() && resource.data.type == 'public';
+      // Allow full access for authenticated users (test mode for hackathon)
+      allow read, write, delete: if isSignedIn();
       
       // Messages subcollection
       match /messages/{messageId} {
-        // Allow read if user can read the parent room (public only)
-        allow read: if isSignedIn() && 
-          get(/databases/$(database)/documents/chat_rooms/$(roomId)).data.type == 'public';
-        
-        // Allow create if:
-        // - User is authenticated
-        // - Room is public
-        // - senderUid matches authenticated user
-        // - text is non-empty and <= 2000 chars
-        allow create: if isSignedIn() &&
-          request.resource.data.senderUid == request.auth.uid &&
-          request.resource.data.text is string &&
-          request.resource.data.text.size() > 0 &&
-          request.resource.data.text.size() <= 2000 &&
-          get(/databases/$(database)/documents/chat_rooms/$(roomId)).data.type == 'public';
+        // Allow full access for authenticated users (test mode)
+        allow read, write: if isSignedIn();
       }
     }
     

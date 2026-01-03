@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/AuthContext';
 import { GraduationCap, Users, BookOpen } from 'lucide-react';
-import UniversalChatBot from '@/components/UniversalChatBot';
 
 export default function Home() {
   const { user, loading, signInWithGoogle } = useAuth();
@@ -106,9 +105,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-      
-      {/* Universal AI Chatbot */}
-      <UniversalChatBot />
     </div>
   );
 }

@@ -3,8 +3,7 @@
 import { useAuth } from '@/lib/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { BookOpen, Users, LogOut, GraduationCap, MessageCircle } from 'lucide-react';
-import UniversalChatBot from '@/components/UniversalChatBot';
+import { BookOpen, Users, LogOut, GraduationCap, MessageCircle, Sparkles } from 'lucide-react';
 
 export default function Dashboard() {
   const { user, loading, logout } = useAuth();
@@ -150,6 +149,32 @@ export default function Dashboard() {
             </button>
           </div>
 
+          {/* AI Assistant Card - Featured */}
+          <div className="mt-8">
+            <button
+              onClick={() => router.push('/assistant')}
+              className="group w-full bg-gradient-to-r from-purple-500 to-pink-500 p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-200 text-left relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
+              <div className="relative flex items-center gap-6">
+                <div className="bg-white/20 backdrop-blur-sm w-20 h-20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Sparkles className="w-10 h-10 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-white mb-2">
+                    AI Assistant
+                  </h3>
+                  <p className="text-white/90">
+                    Get personalized help finding tutors, teammates, or navigating the platform
+                  </p>
+                </div>
+                <div className="text-white font-semibold text-4xl group-hover:translate-x-2 transition-transform">
+                  →
+                </div>
+              </div>
+            </button>
+          </div>
+
           {/* Quick Stats */}
           <div className="mt-12 grid grid-cols-3 gap-6">
             <div className="bg-white p-6 rounded-xl shadow-md text-center">
@@ -167,9 +192,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-
-      {/* Universal ChatBot */}
-      <UniversalChatBot />
     </div>
   );
 }
