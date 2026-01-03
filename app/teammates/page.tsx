@@ -111,14 +111,9 @@ export default function TeammatesPage() {
   // Handle URL parameters from chatbot
   useEffect(() => {
     const urlSkill = searchParams.get('skill');
-    const urlDepartment = searchParams.get('department');
     
     if (urlSkill) {
       setSearchQuery(urlSkill);
-    }
-    
-    if (urlDepartment) {
-      setFilterDepartment(urlDepartment);
     }
   }, [searchParams]);
 
