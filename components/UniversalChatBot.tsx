@@ -153,57 +153,78 @@ export default function UniversalChatBot() {
     }
   };
 
-  const handleSend = async () => {
+  const handleSend = () => {
     if (!input.trim()) return;
 
     const userMessage = input.trim();
     setMessages(prev => [...prev, { text: userMessage, isBot: false }]);
     setInput('');
 
-    // Show typing indicator
-    setMessages(prev => [...prev, { text: '...', isBot: true }]);
-
-    try {
-      // Call AI API for intelligent response
-      const aiResponse = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage })
-      });
-
-      const data = await aiResponse.json();
-      
-      // Remove typing indicator
-      setMessages(prev => prev.slice(0, -1));
-
-      if (data.error) {
-        // Fallback to simple response
+    // Quick responses for common patterns
+    const lower = userMessage.toLowerCase();
+    
+    // Greetings
+    if (/^(hi|hello|hey|hola|yo|sup)\b/i.test(userMessage)) {
+      setTimeout(() => {
         setMessages(prev => [...prev, { 
-          text: "I'm having trouble connecting to my AI brain right now. 🤔 Can you try rephrasing your question?", 
+          text: "Hey there! 😊 I can help you find tutors, post help requests, find teammates, or become a tutor. What would you like to do?", 
           isBot: true 
         }]);
-      } else {
-        // Use AI response
-        setMessages(prev => [...prev, { text: data.response, isBot: true }]);
-        
-        // Still analyze intent for routing
-        const { intent, data: intentData } = analyzeIntent(userMessage);
-        if (intent !== 'unknown') {
-          handleIntent(intent, intentData);
-        }
-      }
-    } catch (error) {
-      console.error('AI request failed:', error);
-      
-      // Remove typing indicator
-      setMessages(prev => prev.slice(0, -1));
-      
-      // Fallback response
-      setMessages(prev => [...prev, { 
-        text: "Oops! Something went wrong. 😅 Try asking me to find tutors, post a help request, or find teammates!", 
-        isBot: true 
-      }]);
+      }, 400);
+      return;
     }
+
+    // Thanks
+    if (/^(thanks|thank you|thx|ty)\b/i.test(userMessage)) {
+      setTimeout(() => {
+        setMessages(prev => [...prev, { 
+          text: "You're very welcome! Happy to help anytime! 💙", 
+          isBot: true 
+        }]);
+      }, 400);
+      return;
+    }
+
+    // Analyze intent and respond
+    const { intent, data } = analyzeIntent(userMessage);
+    
+    setTimeout(() => {
+      let response = '';
+      
+      switch (intent) {
+        case 'find_tutor':
+          response = data.subject 
+            ? `Perfect! Let me help you find tutors for ${data.subject}! 🔍\n\nTaking you to the tutor matching page...`
+            : "Great! I'll take you to browse all available tutors! 📚";
+          break;
+        
+        case 'student_request':
+          response = data.subject
+            ? `Got it! I'll help you post a request for ${data.subject} help! 📝\n\nRedirecting to the request form...`
+            : "I'll help you post your help request! 📝";
+          break;
+        
+        case 'become_tutor':
+          response = "Awesome! Let's get you registered as a tutor! 🎓\n\nYou'll be helping students in no time!";
+          break;
+        
+        case 'find_teammate':
+          response = data.skill
+            ? `Great! Searching for teammates with ${data.skill} skills! 🚀\n\nRedirecting now...`
+            : "Taking you to the teammate finder! 🤝";
+          break;
+        
+        default:
+          response = "I can help you with:\n• Finding tutors for any subject 📚\n• Posting a help request 📝\n• Finding teammates for projects 🚀\n• Becoming a tutor yourself 🎓\n\nWhat would you like to do?";
+      }
+      
+      setMessages(prev => [...prev, { text: response, isBot: true }]);
+      
+      // Navigate if intent found
+      if (intent !== 'unknown') {
+        handleIntent(intent, data);
+      }
+    }, 400);
   };
 
   const handleQuickAction = (action: string) => {
