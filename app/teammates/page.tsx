@@ -122,8 +122,7 @@ export default function TeammatesPage() {
   // Try to sync with Firestore
   useEffect(() => {
     try {
-      const q = query(collection(db, 'teammates'), orderBy('createdAt', 'desc'));
-      const unsubscribe = onSnapshot(q, (snapshot) => {
+      const unsubscribe = onSnapshot(collection(db, 'teammates'), (snapshot) => {
         const teammatesList: TeammateProfile[] = [];
         snapshot.forEach((doc) => {
           teammatesList.push({ id: doc.id, ...doc.data() } as TeammateProfile);

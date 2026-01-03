@@ -134,8 +134,7 @@ export default function TutorsPage() {
   // Try to sync with Firestore (if enabled)
   useEffect(() => {
     try {
-      const q = query(collection(db, 'tutors'), orderBy('createdAt', 'desc'));
-      const unsubscribe = onSnapshot(q, (snapshot) => {
+      const unsubscribe = onSnapshot(collection(db, 'tutors'), (snapshot) => {
         const tutorsList: TutorProfile[] = [];
         snapshot.forEach((doc) => {
           tutorsList.push({ id: doc.id, ...doc.data() } as TutorProfile);
