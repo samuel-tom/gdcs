@@ -298,5 +298,3 @@ export default function ChatBot({ onSearch, type, resultCount = 0 }: ChatBotProp
     </>
   );
 }
-
-export default ChatBot;
