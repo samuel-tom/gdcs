@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/lib/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Users, Search, Plus, X, Code, Lightbulb, Trophy } from 'lucide-react';
 import type { TeammateProfile } from '@/types';
@@ -12,6 +12,7 @@ import ChatBot from '@/components/ChatBot';
 export default function TeammatesPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [filterSkill, setFilterSkill] = useState('all');
@@ -106,6 +107,20 @@ export default function TeammatesPage() {
       router.push('/');
     }
   }, [user, loading, router]);
+
+  // Handle URL parameters from chatbot
+  useEffect(() => {
+    const urlSkill = searchParams.get('skill');
+    const urlDepartment = searchParams.get('department');
+    
+    if (urlSkill) {
+      setSearchQuery(urlSkill);
+    }
+    
+    if (urlDepartment) {
+      setFilterDepartment(urlDepartment);
+    }
+  }, [searchParams]);
 
   // Load from localStorage first
   useEffect(() => {

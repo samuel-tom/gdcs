@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { BookOpen, Users, LogOut, GraduationCap } from 'lucide-react';
+import UniversalChatBot from '@/components/UniversalChatBot';
 
 export default function Dashboard() {
   const { user, loading, logout } = useAuth();
@@ -146,6 +147,9 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Universal ChatBot */}
+      <UniversalChatBot />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/lib/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ArrowLeft, BookOpen, Search, Plus, X } from 'lucide-react';
 import type { TutorProfile, StudentRequest } from '@/types';
@@ -12,6 +12,7 @@ import ChatBot from '@/components/ChatBot';
 export default function TutorsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [mode, setMode] = useState<'choose' | 'tutor' | 'student'>('choose');
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -115,6 +116,26 @@ export default function TutorsPage() {
       router.push('/');
     }
   }, [user, loading, router]);
+
+  // Handle URL parameters from chatbot
+  useEffect(() => {
+    const urlMode = searchParams.get('mode');
+    const urlSubject = searchParams.get('subject');
+    const urlDepartment = searchParams.get('department');
+    
+    if (urlMode === 'find' || urlMode === 'tutor' || urlMode === 'student') {
+      setMode(urlMode as 'choose' | 'tutor' | 'student');
+    }
+    
+    if (urlSubject) {
+      setSearchQuery(urlSubject);
+    }
+    
+    if (urlDepartment) {
+      setFilterDepartment(urlDepartment);
+      setFilterRequestDepartment(urlDepartment);
+    }
+  }, [searchParams]);
 
   // Load from localStorage first (instant) - but Firestore will override
   useEffect(() => {
