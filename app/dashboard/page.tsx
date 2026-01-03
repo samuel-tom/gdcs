@@ -3,7 +3,7 @@
 import { useAuth } from '@/lib/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { BookOpen, Users, LogOut, GraduationCap } from 'lucide-react';
+import { BookOpen, Users, LogOut, GraduationCap, MessageCircle } from 'lucide-react';
 import UniversalChatBot from '@/components/UniversalChatBot';
 
 export default function Dashboard() {
@@ -88,7 +88,7 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
             {/* Tutor Matching Card */}
             <button
               onClick={() => router.push('/tutors')}
@@ -124,6 +124,26 @@ export default function Dashboard() {
                 Connect with students for hackathons, projects, and competitions
               </p>
               <div className="flex items-center text-purple-600 font-semibold group-hover:gap-3 gap-2 transition-all">
+                Get Started
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </div>
+            </button>
+
+            {/* Messages Card */}
+            <button
+              onClick={() => router.push('/chats')}
+              className="group bg-white p-8 rounded-2xl shadow-lg border-2 border-gray-100 hover:border-green-500 hover:shadow-xl transition-all duration-200 text-left"
+            >
+              <div className="bg-gradient-to-br from-green-100 to-green-50 w-20 h-20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <MessageCircle className="w-10 h-10 text-green-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-3 group-hover:text-green-600 transition-colors">
+                Messages
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Chat with tutors, teammates, and peers in direct messages or public rooms
+              </p>
+              <div className="flex items-center text-green-600 font-semibold group-hover:gap-3 gap-2 transition-all">
                 Get Started
                 <span className="group-hover:translate-x-1 transition-transform">→</span>
               </div>

@@ -1,5 +1,6 @@
 export interface TutorProfile {
   id: string;
+  uid?: string;
   name: string;
   email: string;
   phone?: string;
@@ -25,6 +26,7 @@ export interface StudentRequest {
 
 export interface TeammateProfile {
   id: string;
+  uid?: string;
   name: string;
   email: string;
   phone?: string;
