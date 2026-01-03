@@ -778,7 +778,7 @@ export default function TutorsPage() {
         <ChatBot
           type="tutor"
           resultCount={filteredTutors.length}
-          onSearch={(filters) => {
+          onSearch={(filters: { query?: string; department?: string; subject?: string }) => {
             if (filters.query) setSearchQuery(filters.query);
             if (filters.department) setFilterDepartment(filters.department);
           }}

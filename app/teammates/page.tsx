@@ -491,7 +491,7 @@ export default function TeammatesPage() {
       <ChatBot
         type="teammate"
         resultCount={filteredTeammates.length}
-        onSearch={(filters) => {
+        onSearch={(filters: { query?: string; department?: string; subject?: string }) => {
           if (filters.query) setSearchQuery(filters.query);
         }}
       />
