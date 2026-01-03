@@ -116,9 +116,9 @@ export default function ChatBot({ onSearch, type, resultCount = 0 }: ChatBotProp
     
     if (foundPattern) {
       filters.subject = foundPattern.canonical;
-      // Use the canonical subject name for cleaner search display
-      filters.query = foundPattern.canonical;
-    } else if (lower.length > 3) {
+      // Don't set query - let chatbot work behind the scenes
+    } else if (lower.length > 3 && !filters.department) {
+      // Only use raw query if we couldn't extract any structured data
       filters.query = msg;
     }
 
