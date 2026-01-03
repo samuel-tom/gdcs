@@ -7,7 +7,7 @@ import { ArrowLeft, BookOpen, Search, Plus, X } from 'lucide-react';
 import type { TutorProfile, StudentRequest } from '@/types';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
-import ChatBot from '@/components/ChatBot';
+import UniversalChatBot from '@/components/UniversalChatBot';
 
 function TutorsContent() {
   const { user, loading } = useAuth();
@@ -796,14 +796,7 @@ function TutorsContent() {
 
       {/* AI Chatbot Assistant */}
       {mode === 'student' && (
-        <ChatBot
-          type="tutor"
-          resultCount={filteredTutors.length}
-          onSearch={(filters: { query?: string; department?: string; subject?: string }) => {
-            if (filters.query) setSearchQuery(filters.query);
-            if (filters.department) setFilterDepartment(filters.department);
-          }}
-        />
+        <UniversalChatBot />
       )}
     </div>
   );

@@ -7,6 +7,7 @@ export async function POST(req: NextRequest) {
     const { message } = await req.json();
 
     if (!GEMINI_API_KEY) {
+      console.error('GEMINI_API_KEY not found in environment variables');
       return NextResponse.json(
         { error: 'API key not configured' },
         { status: 500 }
@@ -59,7 +60,9 @@ Respond naturally to greetings, thanks, and casual conversation.`;
     );
 
     if (!response.ok) {
-      throw new Error('Gemini API request failed');
+      const errorData = await response.text();
+      console.error('Gemini API error:', response.status, errorData);
+      throw new Error(`Gemini API request failed: ${response.status}`);
     }
 
     const data = await response.json();
@@ -69,7 +72,7 @@ Respond naturally to greetings, thanks, and casual conversation.`;
   } catch (error) {
     console.error('Chat API error:', error);
     return NextResponse.json(
-      { error: 'Failed to get AI response' },
+      { error: 'Failed to get AI response', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

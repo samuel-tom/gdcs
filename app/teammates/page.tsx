@@ -7,7 +7,7 @@ import { ArrowLeft, Users, Search, Plus, X, Code, Lightbulb, Trophy } from 'luci
 import type { TeammateProfile } from '@/types';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
-import ChatBot from '@/components/ChatBot';
+import UniversalChatBot from '@/components/UniversalChatBot';
 
 function TeammatesContent() {
   const { user, loading } = useAuth();
@@ -498,13 +498,7 @@ function TeammatesContent() {
       </div>
 
       {/* AI Chatbot Assistant */}
-      <ChatBot
-        type="teammate"
-        resultCount={filteredTeammates.length}
-        onSearch={(filters: { query?: string; department?: string; subject?: string }) => {
-          if (filters.query) setSearchQuery(filters.query);
-        }}
-      />
+      <UniversalChatBot />
     </div>
   );
 }
