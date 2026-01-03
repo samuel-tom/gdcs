@@ -2,14 +2,14 @@
 
 import { useAuth } from '@/lib/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { ArrowLeft, BookOpen, Search, Plus, X } from 'lucide-react';
 import type { TutorProfile, StudentRequest } from '@/types';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import ChatBot from '@/components/ChatBot';
 
-export default function TutorsPage() {
+function TutorsContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -806,5 +806,13 @@ export default function TutorsPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function TutorsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50"><div className="text-2xl font-semibold text-gray-700">Loading...</div></div>}>
+      <TutorsContent />
+    </Suspense>
   );
 }

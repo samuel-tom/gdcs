@@ -2,14 +2,14 @@
 
 import { useAuth } from '@/lib/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { ArrowLeft, Users, Search, Plus, X, Code, Lightbulb, Trophy } from 'lucide-react';
 import type { TeammateProfile } from '@/types';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import ChatBot from '@/components/ChatBot';
 
-export default function TeammatesPage() {
+function TeammatesContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -506,5 +506,13 @@ export default function TeammatesPage() {
         }}
       />
     </div>
+  );
+}
+
+export default function TeammatesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50"><div className="text-2xl font-semibold text-gray-700">Loading...</div></div>}>
+      <TeammatesContent />
+    </Suspense>
   );
 }
